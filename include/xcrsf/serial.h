@@ -22,20 +22,23 @@
  * SOFTWARE.
  */
 
-#include "xcrsf/crossfire.h"
+#pragma once
+#include <string>
+#include <asm/termbits.h>
 
-int main() {
-    auto crossfire = crossfire::XCrossfire("/dev/ttyAMA10");
-    if (crossfire.open_port()) {
-        std::printf("Port opened\n");
-    }
+namespace crossfire {
+    class UARTSerial {
+        std::string uart_path_{};
+        int uart_fd_ = -1;
+        speed_t baud_rate_ = 0;
 
-    while (true) {
-        const auto channels = crossfire.get_channels();
-        for (int i = 0; i < 4; i++) {
-            std::printf("Channel %d: %u\n", i, channels[i]);
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-    return 0;
-}
+        static int reconfigure_port(const int& uart_fd, speed_t baud_rate = 420000);
+
+    public:
+        UARTSerial(const std::string& uart_path, speed_t baud_rate);
+        ~UARTSerial() = default;
+
+        int open_port();
+        [[nodiscard]] int close_port() const;
+    };
+} // namespace crossfire

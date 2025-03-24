@@ -22,20 +22,14 @@
  * SOFTWARE.
  */
 
-#include "xcrsf/crossfire.h"
+#pragma once
 
-int main() {
-    auto crossfire = crossfire::XCrossfire("/dev/ttyAMA10");
-    if (crossfire.open_port()) {
-        std::printf("Port opened\n");
-    }
+namespace crossfire {
+    class CRCValidator {
+    public:
+        CRCValidator() = default;
+        ~CRCValidator() = default;
 
-    while (true) {
-        const auto channels = crossfire.get_channels();
-        for (int i = 0; i < 4; i++) {
-            std::printf("Channel %d: %u\n", i, channels[i]);
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-    return 0;
-}
+        static uint8_t get_crc8(const uint8_t *ptr, uint8_t length);
+    };
+} // namespace crossfire
