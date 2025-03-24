@@ -26,10 +26,12 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+#include <utility>
+
 #include "xcrsf/serial.h"
 
 namespace crossfire {
-    UARTSerial::UARTSerial(const std::string& uart_path, const speed_t baud_rate): uart_path_(uart_path), baud_rate_(baud_rate) {
+    UARTSerial::UARTSerial(std::string uart_path, const speed_t baud_rate): uart_path_(std::move(uart_path)), baud_rate_(baud_rate) {
         /* Construct */
     }
 
@@ -37,7 +39,7 @@ namespace crossfire {
         this->uart_fd_ = open(this->uart_path_.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
         if (this->uart_fd_ == -1) { return this->uart_fd_; }
 
-        auto status = this->reconfigure_port(this->uart_fd_, this->baud_rate_);
+        const auto status = this->reconfigure_port(this->baud_rate_);
         if (status == -1) { close(this->uart_fd_); return status; }
         return this->uart_fd_;
     }
@@ -46,9 +48,9 @@ namespace crossfire {
         return close(this->uart_fd_);
     }
 
-    int UARTSerial::reconfigure_port(const int& uart_fd, const speed_t baud_rate) {
+    int UARTSerial::reconfigure_port(const speed_t baud_rate) const {
         termios2 options{}; int status{};
-        status = ioctl(uart_fd, TCGETS2, &options);
+        status = ioctl(this->uart_fd_, TCGETS2, &options);
         if (status == -1) { return status; }
 
         options.c_cflag &= ~CBAUD;
@@ -68,6 +70,6 @@ namespace crossfire {
         options.c_cc[VTIME] = 0;
         options.c_cc[VMIN] = 0;
 
-        status = ioctl(uart_fd, TCSETS2, &options); return status;
+        status = ioctl(this->uart_fd_, TCSETS2, &options); return status;
     }
 } // namespace crossfire

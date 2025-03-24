@@ -31,11 +31,10 @@ namespace crossfire {
         std::string uart_path_{};
         int uart_fd_ = -1;
         speed_t baud_rate_ = 0;
-
-        static int reconfigure_port(const int& uart_fd, speed_t baud_rate = 420000);
+        [[nodiscard]] int reconfigure_port(speed_t baud_rate) const;
 
     public:
-        UARTSerial(const std::string& uart_path, speed_t baud_rate);
+        UARTSerial(std::string uart_path, speed_t baud_rate);
         ~UARTSerial() = default;
 
         int open_port();
