@@ -28,16 +28,55 @@
 
 namespace crossfire {
     class UARTSerial {
-        std::string uart_path_{};
+        /**
+         * @brief The file descriptor.
+         */
         int uart_fd_ = -1;
+
+        /**
+         * @brief The uart path.
+         */
+        std::string uart_path_{};
+
+        /**
+         * @brief The baud rate.
+         */
         speed_t baud_rate_ = 0;
+
+        /**
+         * @brief Reconfigure the port's baud rate.
+         *
+         * @param baud_rate The baud rate.
+         * @return The status code.
+         */
         [[nodiscard]] int reconfigure_port(speed_t baud_rate) const;
 
     public:
+        /**
+         * @brief Create instance of UARTSerial.
+         *
+         * @param uart_path The path from the serial connection.
+         * @param baud_rate The baud rate.
+         */
         UARTSerial(std::string uart_path, speed_t baud_rate);
-        ~UARTSerial() = default;
 
+        /**
+         * @brief Destroy instance of UARTSerial.
+         */
+        ~UARTSerial();
+
+        /**
+         * @brief Open an uart (serial) connection.
+         *
+         * @return The file descriptor.
+         */
         int open_port();
+
+        /**
+         * @brief Close the current uart (serial) connection.
+         *
+         * @return The status code.
+         */
         [[nodiscard]] int close_port() const;
     };
 } // namespace crossfire

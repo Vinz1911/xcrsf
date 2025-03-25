@@ -27,9 +27,23 @@
 namespace crossfire {
     class CRCValidator {
     public:
-        CRCValidator() = default;
-        ~CRCValidator() = default;
+        /**
+         * @brief Create instance of CRCValidator.
+         */
+        CRCValidator(/* args */);
 
-        static uint8_t get_crc8(const uint8_t *ptr, uint8_t length);
+        /**
+          * @brief Destroy instance of CRCValidator.
+          */
+        ~CRCValidator();
+
+        /**
+         * @brief Generate crc8 validate byte.
+         *
+         * @param validate Payload byte to validate.
+         * @param length Payload length.
+         * @return Validated crc8 byte.
+         */
+        static uint8_t get_crc8(const uint8_t *validate, uint8_t length);
     };
 } // namespace crossfire

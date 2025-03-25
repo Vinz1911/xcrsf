@@ -25,7 +25,6 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-
 #include <utility>
 
 #include "xcrsf/serial.h"
@@ -33,6 +32,10 @@
 namespace crossfire {
     UARTSerial::UARTSerial(std::string uart_path, const speed_t baud_rate): uart_path_(std::move(uart_path)), baud_rate_(baud_rate) {
         /* Construct */
+    }
+
+    UARTSerial::~UARTSerial() {
+        close(this->uart_fd_);
     }
 
     int UARTSerial::open_port() {

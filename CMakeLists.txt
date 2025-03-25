@@ -13,7 +13,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # Build shared library
 add_library(${PROJECT_NAME} SHARED ${SRC_LIST})
-target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT} atomic)
 
 # Build demo project
 add_executable(${PROJECT_NAME}_demo examples/main.cpp)

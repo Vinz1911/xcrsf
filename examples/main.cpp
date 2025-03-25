@@ -27,13 +27,13 @@
 int main() {
     auto crossfire = crossfire::XCrossfire("/dev/ttyAMA10");
     if (crossfire.open_port()) {
-        std::printf("Port opened\n");
+        std::printf("Port opened...\n");
     }
 
-    while (true) {
+    while (crossfire.is_paired()) {
         const auto channels = crossfire.get_channels();
         for (int i = 0; i < 4; i++) {
-            std::printf("Channel %d: %u\n", i, channels[i]);
+            if (channels.front() != 0) { std::printf("Channel %d: %u\n", i, channels[i]); }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }

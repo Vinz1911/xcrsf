@@ -23,13 +23,17 @@
  */
 
 #include <cstdint>
+
 #include "xcrsf/crc.h"
 
 namespace crossfire {
-    uint8_t CRCValidator::get_crc8(const uint8_t *ptr, uint8_t length) {
+    CRCValidator::CRCValidator() = default;
+    CRCValidator::~CRCValidator() = default;
+
+    uint8_t CRCValidator::get_crc8(const uint8_t *validate, uint8_t length) {
         uint8_t crc = 0;
         while (length--) {
-            crc ^= *ptr++;
+            crc ^= *validate++;
             for (uint8_t i = 0; i < 8; i++) {
                 crc = crc & 0x80 ? crc << 1 ^ 0xD5 : crc << 1;
             }

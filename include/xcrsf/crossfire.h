@@ -23,29 +23,103 @@
  */
 
 #pragma once
+#include <array>
 #include <thread>
+#include <atomic>
 
 #include "xcrsf/serial.h"
 
 namespace crossfire {
     class XCrossfire {
-        UARTSerial uart_serial_;
+        /**
+         * @brief The file descriptor.
+         */
         int uart_fd_ = -1;
-        uint16_t channel_data_[16]{};
+
+        /**
+         * @brief Instance of UARTSerial.
+         */
+        UARTSerial uart_serial_;
+
+        /**
+         * @brief The channel data.
+         */
+        std::array<uint16_t, 16> channel_data_{};
+
+        /**
+         * @brief Timestamp for timeout.
+         */
+        std::chrono::system_clock::time_point timeout_{};
+
+        /**
+         * @brief Indicator of pairing status.
+         */
+        std::atomic<bool> is_paired_{};
+
+        /**
+         * @brief Mutex lock for channel data.
+         */
         std::mutex channel_lock_;
+
+        /**
+         * @brief The parser thread.
+         */
         std::thread thread_parser_;
 
-        void join_all();
+        /**
+         * @brief Join the current parser thread.
+         */
+        void join_thread();
+
+        /**
+         * @brief The CRSF Protocol parser.
+         */
         void crsf_parser();
+
+        /**
+         * @brief Update the channel information.
+         */
         void update_channel(const uint8_t* crsf_cata);
+
+        /**
+         * @brief Extract the channel information from the payload.
+         */
         static uint16_t extract_channel(const uint8_t* data, int index);
 
     public:
+        /**
+         * @brief Create instance of XCrossfire.
+         *
+         * @param uart_path The path from the serial connection.
+         * @param baud_rate The baud rate, default is 420_000 for ExpressLRS Receiver.
+         */
         explicit XCrossfire(const std::string& uart_path, speed_t baud_rate = 420000);
+
+        /**
+         * @brief Destroy instance of XCrossfire.
+         */
         ~XCrossfire();
 
+        /**
+         * @brief Get the channel information.
+         *
+         * @return The channel data.
+         */
+        std::array<uint16_t, 16> get_channels();
+
+        /**
+         * @brief Status if receiver is paired.
+         */
+        [[nodiscard]] bool is_paired() const;
+
+        /**
+         * @brief Open serial connection.
+         */
         [[nodiscard]] bool open_port();
+
+        /**
+        * @brief Close serial connection.
+        */
         bool close_port();
-        uint16_t* get_channels();
     };
 } // namespace crossfire

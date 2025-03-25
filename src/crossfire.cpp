@@ -30,9 +30,11 @@
 #include "xcrsf/crossfire.h"
 
 namespace crossfire {
+    static constexpr auto STD_MEMORY_ORDER = std::memory_order::relaxed;
     static constexpr auto STD_READ_INTERRUPT = std::chrono::microseconds(100);
     static constexpr auto CRSF_SYNC_BYTE = 0xC8;
     static constexpr auto CRSF_PAYLOAD_SIZE = 0x18;
+    static constexpr auto CRSF_TIMEOUT = std::chrono::milliseconds(250);
 
     XCrossfire::XCrossfire(const std::string& uart_path, const speed_t baud_rate): uart_serial_(uart_path, baud_rate) {
         /* Construct */
@@ -42,7 +44,11 @@ namespace crossfire {
         this->close_port();
     }
 
-    void XCrossfire::join_all() {
+    bool XCrossfire::is_paired() const {
+        return is_paired_.load(STD_MEMORY_ORDER);
+    }
+
+    void XCrossfire::join_thread() {
         if (this->thread_parser_.joinable()) {
             this->thread_parser_.join();
         }
@@ -51,14 +57,16 @@ namespace crossfire {
     bool XCrossfire::open_port() {
         this->uart_fd_ = this->uart_serial_.open_port();
         if (this->uart_fd_ == -1) { return false; }
-        this->thread_parser_ = std::thread{&XCrossfire::crsf_parser, this}; return true;
+        this->thread_parser_ = std::thread{&XCrossfire::crsf_parser, this};
+        this->timeout_ = std::chrono::high_resolution_clock::now();
+        this->is_paired_.store(true, STD_MEMORY_ORDER); return true;
     }
 
     bool XCrossfire::close_port() {
-        if (this->uart_serial_.close_port() == 0) { this->join_all(); return true; } return false;
+        if (this->uart_serial_.close_port() == 0) { this->join_thread(); return true; } return false;
     }
 
-    uint16_t* XCrossfire::get_channels() {
+    std::array<uint16_t, 16> XCrossfire::get_channels() {
         std::lock_guard lock(this->channel_lock_);
         return this->channel_data_;
     }
@@ -77,9 +85,8 @@ namespace crossfire {
     }
 
     void XCrossfire::crsf_parser() {
-        std::vector<uint8_t> buffer(3, 0x00);
-        uint8_t byte = 0x00;
-        while (this->uart_fd_ != -1) {
+        std::vector<uint8_t> buffer(3, 0x00); uint8_t byte = 0x00;
+        while (this->is_paired_.load(STD_MEMORY_ORDER)) {
             if (read(this->uart_fd_, &byte, 1)) {
                 if (byte == CRSF_SYNC_BYTE && buffer[0] == 0x00) { buffer[0] = byte; continue; }
                 if (buffer[0] == CRSF_SYNC_BYTE && buffer[1] == 0x00) { buffer[1] = byte; continue; }
@@ -92,8 +99,10 @@ namespace crossfire {
                         this->update_channel(buffer.data());
                     }
                     buffer.assign(3, 0x00);
-                }
+                } this->timeout_ = std::chrono::high_resolution_clock::now();
             } else { std::this_thread::sleep_for(STD_READ_INTERRUPT); }
+            if (std::chrono::high_resolution_clock::now() > this->timeout_ + CRSF_TIMEOUT) { this->is_paired_.store(false, STD_MEMORY_ORDER); }
         }
+        this->is_paired_.store(false, STD_MEMORY_ORDER);
     }
 } // namespace crossfire
