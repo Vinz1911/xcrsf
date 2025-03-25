@@ -32,7 +32,7 @@ int main() {
 
     while (crossfire.is_paired()) {
         const auto channels = crossfire.get_channels();
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 16; i++) {
             if (channels.front() != 0) { std::printf("Channel %d: %u\n", i, channels[i]); }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
