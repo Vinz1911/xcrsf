@@ -32,6 +32,7 @@
 namespace crossfire {
     static constexpr auto STD_MEMORY_ORDER = std::memory_order::relaxed;
     static constexpr auto STD_READ_INTERRUPT = std::chrono::microseconds(100);
+
     static constexpr auto CRSF_SYNC_BYTE = 0xC8;
     static constexpr auto CRSF_PAYLOAD_SIZE = 0x18;
     static constexpr auto CRSF_TIMEOUT = std::chrono::milliseconds(250);
@@ -48,12 +49,6 @@ namespace crossfire {
         return is_paired_.load(STD_MEMORY_ORDER);
     }
 
-    void XCrossfire::join_thread() {
-        if (this->thread_parser_.joinable()) {
-            this->thread_parser_.join();
-        }
-    }
-
     bool XCrossfire::open_port() {
         this->uart_fd_ = this->uart_serial_.open_port();
         if (this->uart_fd_ == -1) { return false; }
@@ -63,7 +58,11 @@ namespace crossfire {
     }
 
     bool XCrossfire::close_port() {
-        if (this->uart_serial_.close_port() == 0) { this->join_thread(); return true; } return false;
+        if (this->uart_serial_.close_port() == 0) {
+            if (this->thread_parser_.joinable()) {
+                this->thread_parser_.join();
+            } return true;
+        } return false;
     }
 
     std::array<uint16_t, 16> XCrossfire::get_channels() {
@@ -92,12 +91,8 @@ namespace crossfire {
                 if (buffer[0] == CRSF_SYNC_BYTE && buffer[1] == 0x00) { buffer[1] = byte; continue; }
                 if (buffer[0] == CRSF_SYNC_BYTE && buffer[2] == 0x00) {
                     buffer[2] = byte;
-                    while (buffer.size() < buffer[1] + 2) {
-                        if (read(this->uart_fd_, &byte, 1)) { buffer.emplace_back(byte); } else { std::this_thread::sleep_for(STD_READ_INTERRUPT); }
-                    }
-                    if (CRCValidator::get_crc8(&buffer[2], buffer[1] - 1) == buffer[buffer[1] + 1]) {
-                        this->update_channel(buffer.data());
-                    }
+                    while (buffer.size() < buffer[1] + 2) { if (read(this->uart_fd_, &byte, 1)) { buffer.emplace_back(byte); } else { std::this_thread::sleep_for(STD_READ_INTERRUPT); } }
+                    if (CRCValidator::get_crc8(&buffer[2], buffer[1] - 1) == buffer[buffer[1] + 1]) { this->update_channel(buffer.data()); }
                     buffer.assign(3, 0x00);
                 } this->timeout_ = std::chrono::high_resolution_clock::now();
             } else { std::this_thread::sleep_for(STD_READ_INTERRUPT); }

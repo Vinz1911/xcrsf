@@ -67,11 +67,6 @@ namespace crossfire {
         std::thread thread_parser_;
 
         /**
-         * @brief Join the current parser thread.
-         */
-        void join_thread();
-
-        /**
          * @brief The CRSF Protocol parser.
          */
         void crsf_parser();
