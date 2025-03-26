@@ -33,6 +33,7 @@ namespace crossfire {
     static constexpr auto STD_MEMORY_ORDER = std::memory_order::relaxed;
     static constexpr auto STD_READ_INTERRUPT = std::chrono::microseconds(100);
 
+    static constexpr auto CRSF_INIT_BYTE = 0x00;
     static constexpr auto CRSF_SYNC_BYTE = 0xC8;
     static constexpr auto CRSF_PAYLOAD_SIZE = 0x18;
     static constexpr auto CRSF_TIMEOUT = std::chrono::milliseconds(250);
@@ -84,15 +85,15 @@ namespace crossfire {
     }
 
     void XCrossfire::crsf_parser() {
-        std::vector<uint8_t> buffer(3, 0x00); uint8_t byte = 0x00;
+        std::vector<uint8_t> buffer(3, CRSF_INIT_BYTE); uint8_t byte = CRSF_INIT_BYTE;
         while (this->is_paired_.load(STD_MEMORY_ORDER)) {
             if (read(this->uart_fd_, &byte, 1)) {
-                if (byte == CRSF_SYNC_BYTE && buffer[0] == 0x00) { buffer[0] = byte; continue; }
-                if (buffer[0] == CRSF_SYNC_BYTE && buffer[1] == 0x00) { buffer[1] = byte; continue; }
-                if (buffer[0] == CRSF_SYNC_BYTE && buffer[2] == 0x00) { buffer[2] = byte;
+                if (byte == CRSF_SYNC_BYTE && buffer[0] == CRSF_INIT_BYTE) { buffer[0] = byte; continue; }
+                if (buffer[0] == CRSF_SYNC_BYTE && buffer[1] == CRSF_INIT_BYTE) { buffer[1] = byte; continue; }
+                if (buffer[0] == CRSF_SYNC_BYTE && buffer[2] == CRSF_INIT_BYTE) { buffer[2] = byte;
                     while (buffer.size() < buffer[1] + 2) { if (read(this->uart_fd_, &byte, 1)) { buffer.emplace_back(byte); } else { std::this_thread::sleep_for(STD_READ_INTERRUPT); } }
                     if (CRCValidator::get_crc8(&buffer[2], buffer[1] - 1) == buffer[buffer[1] + 1]) { this->update_channel(buffer.data()); }
-                    if (buffer[1] == CRSF_PAYLOAD_SIZE) { this->timeout_ = std::chrono::high_resolution_clock::now(); } buffer.assign(3, 0x00);
+                    if (buffer[1] == CRSF_PAYLOAD_SIZE) { this->timeout_ = std::chrono::high_resolution_clock::now(); } buffer.assign(3, CRSF_INIT_BYTE);
                 }
             } else { std::this_thread::sleep_for(STD_READ_INTERRUPT); }
             if (std::chrono::high_resolution_clock::now() > this->timeout_ + CRSF_TIMEOUT) { this->is_paired_.store(false, STD_MEMORY_ORDER); }
