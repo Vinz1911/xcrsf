@@ -28,4 +28,4 @@ namespace crossfire {
     uint16_t swap_byte_order(const uint16_t value) {
         return value >> 8 | value << 8;
     }
-}
+} // namespace crossfire

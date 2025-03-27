@@ -54,4 +54,4 @@ namespace crossfire {
             crc = crc_table[crc ^ *validate++];
         } return crc;
     }
-}
+} // namespace crossfire

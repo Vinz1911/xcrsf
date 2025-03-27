@@ -51,4 +51,4 @@ namespace crossfire {
         uint32_t capacity: 24;
         uint8_t percent;
     };
-}
+} // namespace crossfire

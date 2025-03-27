@@ -33,4 +33,4 @@ namespace crossfire {
      * @return The swapped value.
      */
     uint16_t swap_byte_order(uint16_t value);
-}
+} // namespace crossfire
