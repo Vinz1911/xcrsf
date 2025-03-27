@@ -22,24 +22,33 @@
  * SOFTWARE.
  */
 
-#include <cstring>
-#include <vector>
+#pragma once
+#include <cstdint>
 
-#include "xcrsf/crossfire.h"
+namespace crossfire {
+    /**
+     * @brief The CRSF Protocol packet type bytes.
+     */
+    enum CRSFPacket: uint8_t {
+        CRSF_INIT = 0x00,
+        CRSF_SYNC = 0xC8,
+        CRSF_GPS = 0x02,
+        CRSF_VARIO = 0x07,
+        CRSF_BATTERY_SENSOR = 0x08,
+        CRSF_BARO_ALTITUDE = 0x09,
+        CRSF_LINK_STATISTICS = 0x14,
+        CRSF_RC_CHANNELS_PACKED = 0x16,
+        CRSF_MAX_PACKET = 0x3C,
+        CRSF_ATTITUDE = 0x1E
+    };
 
-int main() {
-    auto crossfire = crossfire::XCrossfire("/dev/ttyAMA10");
-    if (crossfire.open_port()) {
-        std::printf("Port opened...\n");
-    }
-
-    while (crossfire.is_paired()) {
-        const auto channels = crossfire.get_channels();
-        for (int i = 0; i < 4; i++) {
-            if (channels.front() != 0) { std::printf("Channel %d: %u\n", i, channels[i]); }
-        }
-        crossfire.set_battery_telemetry(11.4, 15.6, 7500, 85);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-    return 0;
+    /**
+     * @brief The Battery type.
+     */
+    struct CRSFBattery {
+        uint16_t voltage;
+        uint16_t current;
+        uint32_t capacity: 24;
+        uint8_t percent;
+    };
 }

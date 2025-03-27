@@ -67,9 +67,17 @@ namespace crossfire {
         std::thread thread_parser_;
 
         /**
-         * @brief The CRSF Protocol parser.
+         * @brief Send CRSF Protocol message.
+         *
+         * @param type The message type.
+         * @param payload The payload data.
          */
-        void crsf_parser();
+        void send_crsf(uint8_t type, const std::vector<uint8_t>& payload) const;
+
+        /**
+         * @brief Parse CRSF Protocol message.
+         */
+        void receive_crsf();
 
         /**
          * @brief Update the channel information.
@@ -94,6 +102,16 @@ namespace crossfire {
          * @brief Destroy instance of XCrossfire.
          */
         ~XCrossfire();
+
+        /**
+         * @brief Send telemetry data back to the transmitter.
+         *
+         * @param voltage The Volts from the power source.
+         * @param current The Amps from the power source.
+         * @param capacity The Milliamps from the power source.
+         * @param percent The Percent from the power source.
+         */
+        void set_battery_telemetry(float voltage, float current, uint32_t capacity, uint8_t percent) const;
 
         /**
          * @brief Get the channel information.
