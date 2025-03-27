@@ -9,15 +9,6 @@ XpressCRSF enables real-time parsing of telemetry and control data on Raspberry 
 ## C++ Version:
 [![C++23](https://img.shields.io/badge/C++-23-blue.svg?logo=c%2B%2B&style=flat)](https://isocpp.org)
 
-# Import:
-
-```c++
-#include "xcrsf/crossfire.h"
-
-auto crossfire = crossfire::XCrossfire("/dev/ttyAMA10");
-crossfire.open_port()
-```
-
 # Build and Install:
 
 ```shell
@@ -26,6 +17,15 @@ mkdir build
 cd build/
 cmake ..
 make && sudo make install
+```
+
+# Import:
+
+```c++
+#include "xcrsf/crossfire.h"
+
+auto crossfire = crossfire::XCrossfire("/dev/ttyAMA10");
+crossfire.open_port()
 ```
 
 # Usage:
