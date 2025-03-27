@@ -95,10 +95,10 @@ namespace crossfire {
         if (bit_offset > 5) { value |= data[byte_index + 2] << (16 - bit_offset); } return value & 0x07FF;
     }
 
-    void XCrossfire::send_crsf(const uint8_t type, const std::vector<uint8_t>& payload) const {
+    void XCrossfire::send_crsf(const uint8_t packet, const std::vector<uint8_t>& payload) const {
         if (!this->is_paired()) { return; }
         const auto length = payload.size(); uint8_t buffer[CRSF_MAX_PACKET + 4];
-        buffer[0] = CRSF_SYNC; buffer[1] = length + 2; buffer[2] = type;
+        buffer[0] = CRSF_SYNC; buffer[1] = length + 2; buffer[2] = packet;
 
         std::memcpy(&buffer[3], payload.data(), length); buffer[length + 3] = CRCValidator::get_crc8(&buffer[2], length + 1);
         write(this->uart_fd_, buffer, length + 4);
