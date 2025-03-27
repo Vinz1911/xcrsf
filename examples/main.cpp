@@ -38,7 +38,7 @@ int main() {
         for (int i = 0; i < 4; i++) {
             if (channels.front() != 0) { std::printf("Channel %d: %u\n", i, channels[i]); }
         }
-        crossfire.set_battery_telemetry(11.4, 15.6, 7500, 85);
+        crossfire.set_battery_telemetry(11.4, 15.6, 6500, 75);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     return 0;

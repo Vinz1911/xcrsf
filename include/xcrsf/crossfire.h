@@ -69,7 +69,7 @@ namespace crossfire {
         /**
          * @brief Send CRSF Protocol message.
          *
-         * @param packet The message type.
+         * @param packet The packet type.
          * @param payload The payload data.
          */
         void send_crsf(uint8_t packet, const std::vector<uint8_t>& payload) const;

@@ -32,5 +32,5 @@ namespace crossfire {
      * @param value The value to swap.
      * @return The swapped value.
      */
-    uint16_t swap_endian(uint16_t value);
+    uint16_t swap_byte_order(uint16_t value);
 }

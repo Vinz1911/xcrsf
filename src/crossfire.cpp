@@ -65,9 +65,9 @@ namespace crossfire {
 
     void XCrossfire::set_battery_telemetry(const float voltage, const float current, const uint32_t capacity, const uint8_t percent) const {
         auto battery = CRSFBattery{};
-        battery.voltage = swap_endian(static_cast<uint16_t>(voltage * 10));
-        battery.current = swap_endian(static_cast<uint16_t>(current * 10));
-        battery.capacity = swap_endian(capacity) << 8;
+        battery.voltage = swap_byte_order(static_cast<uint16_t>(voltage * 10));
+        battery.current = swap_byte_order(static_cast<uint16_t>(current * 10));
+        battery.capacity = swap_byte_order(capacity) << 8;
         battery.percent = percent;
 
         const std::vector payload(
