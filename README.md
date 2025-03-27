@@ -1,7 +1,7 @@
 # XpressCRSF
 **XpressCRSF** is a fast and lightweight `CRSF (Crossfire)` protocol parser for ExpressLRS receivers on Raspberry Pi. 
 It operates at the default baud rate of 420,000, using the termios library for efficient serial communication.
-XpressCRSF enables real-time parsing of telemetry and control data on Raspberry Pi devices.
+XpressCRSF enables real-time parsing of telemetry and control data on Raspberry Pi.
 
 ## License:
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?longCache=true&style=flat)](https://github.com/Vinz1911/xcrsf/blob/master/LICENSE)
@@ -25,25 +25,37 @@ crossfire.open_port()
 mkdir build
 cd build/
 cmake ..
-make && make install
+make && sudo make install
 ```
 
 # Usage:
+## Receive Channel Information
 
 ```c++
 int main() {
+    // Create instance of XCrossfire
     auto crossfire = crossfire::XCrossfire("/dev/ttyAMA10");
-    if (crossfire.open_port()) {
-        std::printf("Port opened...\n");
-    }
+    if (crossfire.open_port()) { std::printf("Port opened...\n"); }
 
     while (crossfire.is_paired()) {
+        // Get channel data
         const auto channels = crossfire.get_channels();
-        for (int i = 0; i < 16; i++) {
-            if (channels.front() != 0) { std::printf("Channel %d: %u\n", i, channels[i]); }
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+    return 0;
+}
+```
+
+## Send Telemetry Information
+
+```c++
+int main() {
+    // Create instance of XCrossfire
+    auto crossfire = crossfire::XCrossfire("/dev/ttyAMA10");
+    if (crossfire.open_port()) { std::printf("Port opened...\n"); }
+    
+    // Send Telemetry
+    crossfire.set_battery_telemetry(12.0, 16.0, 8500, 95);
     return 0;
 }
 ```

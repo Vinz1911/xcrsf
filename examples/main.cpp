@@ -29,16 +29,15 @@
 
 int main() {
     auto crossfire = crossfire::XCrossfire("/dev/ttyAMA10");
-    if (crossfire.open_port()) {
-        std::printf("Port opened...\n");
-    }
+    if (crossfire.open_port()) { std::printf("Port opened...\n"); }
 
     while (crossfire.is_paired()) {
         const auto channels = crossfire.get_channels();
         for (int i = 0; i < 4; i++) {
             if (channels.front() != 0) { std::printf("Channel %d: %u\n", i, channels[i]); }
         }
-        crossfire.set_battery_telemetry(11.4, 15.6, 6500, 75);
+        const auto is_send = crossfire.set_battery_telemetry(11.4, 15.6, 6500, 75);
+        if (!is_send) { std::printf("Sending telemetry data failed!\n"); }
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     return 0;

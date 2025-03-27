@@ -30,9 +30,7 @@
 #include "xcrsf/serial.h"
 
 namespace crossfire {
-    UARTSerial::UARTSerial(std::string uart_path, const speed_t baud_rate): uart_path_(std::move(uart_path)), baud_rate_(baud_rate) {
-        /* Construct */
-    }
+    UARTSerial::UARTSerial(std::string uart_path, const speed_t baud_rate): uart_path_(std::move(uart_path)), baud_rate_(baud_rate) { }
 
     UARTSerial::~UARTSerial() {
         close(this->uart_fd_);

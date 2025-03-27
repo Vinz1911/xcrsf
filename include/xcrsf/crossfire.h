@@ -71,8 +71,9 @@ namespace crossfire {
          *
          * @param packet The packet type.
          * @param payload The payload data.
+         * @return True on success otherwise False.
          */
-        void send_crsf(uint8_t packet, const std::vector<uint8_t>& payload) const;
+        [[nodiscard]] bool send_crsf(uint8_t packet, const std::vector<uint8_t>& payload) const;
 
         /**
          * @brief Parse CRSF Protocol message.
@@ -110,8 +111,9 @@ namespace crossfire {
          * @param current The Amps from the power source.
          * @param capacity The Milliamps from the power source.
          * @param percent The Percent from the power source.
+         * @return True on success otherwise False.
          */
-        void set_battery_telemetry(float voltage, float current, uint32_t capacity, uint8_t percent) const;
+        [[nodiscard]] bool set_battery_telemetry(float voltage, float current, uint32_t capacity, uint8_t percent) const;
 
         /**
          * @brief Get the channel information.
@@ -122,16 +124,22 @@ namespace crossfire {
 
         /**
          * @brief Status if receiver is paired.
+         *
+         * @return True if paired otherwise False.
          */
         [[nodiscard]] bool is_paired() const;
 
         /**
          * @brief Open serial connection.
+         *
+         * @return True on success otherwise False.
          */
         [[nodiscard]] bool open_port();
 
         /**
         * @brief Close serial connection.
+        *
+        * @return True on success otherwise False.
         */
         bool close_port();
     };

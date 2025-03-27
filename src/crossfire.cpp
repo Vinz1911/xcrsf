@@ -35,7 +35,7 @@
 namespace crossfire {
     static constexpr auto STD_MEMORY_ORDER = std::memory_order::relaxed;
     static constexpr auto STD_READ_INTERRUPT = std::chrono::microseconds(100);
-    static constexpr auto STD_TIMEOUT = std::chrono::milliseconds(250);
+    static constexpr auto STD_TIMEOUT = std::chrono::milliseconds(150);
 
     XCrossfire::XCrossfire(const std::string& uart_path, const speed_t baud_rate): uart_serial_(uart_path, baud_rate) { }
 
@@ -50,20 +50,18 @@ namespace crossfire {
     bool XCrossfire::open_port() {
         this->uart_fd_ = this->uart_serial_.open_port();
         if (this->uart_fd_ == -1) { return false; }
-        this->thread_parser_ = std::thread{&XCrossfire::receive_crsf, this};
         this->timeout_ = std::chrono::high_resolution_clock::now();
+        this->thread_parser_ = std::thread{&XCrossfire::receive_crsf, this};
         this->is_paired_.store(true, STD_MEMORY_ORDER); return true;
     }
 
     bool XCrossfire::close_port() {
-        if (this->uart_serial_.close_port() == 0) {
-            if (this->thread_parser_.joinable()) {
-                this->thread_parser_.join();
-            } return true;
-        } return false;
+        const auto is_closed = this->uart_serial_.close_port() == 0;
+        if (this->thread_parser_.joinable()) { this->thread_parser_.join(); }
+        this->is_paired_.store(false, STD_MEMORY_ORDER); return is_closed;
     }
 
-    void XCrossfire::set_battery_telemetry(const float voltage, const float current, const uint32_t capacity, const uint8_t percent) const {
+    bool XCrossfire::set_battery_telemetry(const float voltage, const float current, const uint32_t capacity, const uint8_t percent) const {
         auto battery = CRSFBattery{};
         battery.voltage = swap_byte_order(static_cast<uint16_t>(voltage * 10));
         battery.current = swap_byte_order(static_cast<uint16_t>(current * 10));
@@ -74,7 +72,7 @@ namespace crossfire {
             reinterpret_cast<uint8_t*>(&battery),
             reinterpret_cast<uint8_t*>(&battery) + sizeof(CRSFBattery)
         );
-        this->send_crsf(CRSF_BATTERY_SENSOR, payload);
+        return this->send_crsf(CRSF_BATTERY_SENSOR, payload);
     }
 
     std::array<uint16_t, 16> XCrossfire::get_channels() {
@@ -95,13 +93,13 @@ namespace crossfire {
         if (bit_offset > 5) { value |= data[byte_index + 2] << (16 - bit_offset); } return value & 0x07FF;
     }
 
-    void XCrossfire::send_crsf(const uint8_t packet, const std::vector<uint8_t>& payload) const {
-        if (!this->is_paired()) { return; }
+    bool XCrossfire::send_crsf(const uint8_t packet, const std::vector<uint8_t>& payload) const {
+        if (!this->is_paired_.load(STD_MEMORY_ORDER) || payload.size() > CRSF_MAX_PACKET) { return false; }
         const auto length = payload.size(); uint8_t buffer[CRSF_MAX_PACKET + 4];
         buffer[0] = CRSF_SYNC; buffer[1] = length + 2; buffer[2] = packet;
 
         std::memcpy(&buffer[3], payload.data(), length); buffer[length + 3] = CRCValidator::get_crc8(&buffer[2], length + 1);
-        write(this->uart_fd_, buffer, length + 4);
+        return write(this->uart_fd_, buffer, length + 4);
     }
 
     void XCrossfire::receive_crsf() {
@@ -118,6 +116,5 @@ namespace crossfire {
             } else { std::this_thread::sleep_for(STD_READ_INTERRUPT); }
             if (std::chrono::high_resolution_clock::now() > this->timeout_ + STD_TIMEOUT) { this->is_paired_.store(false, STD_MEMORY_ORDER); }
         }
-        this->is_paired_.store(false, STD_MEMORY_ORDER);
     }
 } // namespace crossfire
