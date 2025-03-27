@@ -37,9 +37,7 @@ namespace crossfire {
     static constexpr auto STD_READ_INTERRUPT = std::chrono::microseconds(100);
     static constexpr auto STD_TIMEOUT = std::chrono::milliseconds(250);
 
-    XCrossfire::XCrossfire(const std::string& uart_path, const speed_t baud_rate): uart_serial_(uart_path, baud_rate) {
-        /* Construct */
-    }
+    XCrossfire::XCrossfire(const std::string& uart_path, const speed_t baud_rate): uart_serial_(uart_path, baud_rate) { }
 
     XCrossfire::~XCrossfire() {
         this->close_port();
