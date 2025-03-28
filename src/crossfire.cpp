@@ -35,9 +35,9 @@
 namespace crossfire {
     static constexpr auto STD_MEMORY_ORDER = std::memory_order::relaxed;
     static constexpr auto STD_READ_INTERRUPT = std::chrono::microseconds(100);
-    static constexpr auto STD_TIMEOUT = std::chrono::milliseconds(150);
+    static constexpr auto STD_TIMEOUT = std::chrono::milliseconds(250);
 
-    XCrossfire::XCrossfire(const std::string& uart_path, const speed_t baud_rate): uart_serial_(uart_path, baud_rate) { }
+    XCrossfire::XCrossfire(const std::string& uart_path, const speed_t baud_rate): uart_serial_(uart_path, baud_rate){}
 
     XCrossfire::~XCrossfire() {
         this->close_port();
@@ -48,17 +48,18 @@ namespace crossfire {
     }
 
     bool XCrossfire::open_port() {
+        if (is_paired_.load(STD_MEMORY_ORDER)) { return false; }
         this->uart_fd_ = this->uart_serial_.open_port();
         if (this->uart_fd_ == -1) { return false; }
-        this->timeout_ = std::chrono::high_resolution_clock::now();
-        this->thread_parser_ = std::thread{&XCrossfire::receive_crsf, this};
-        this->is_paired_.store(true, STD_MEMORY_ORDER); return true;
+
+        this->is_paired_.store(true, STD_MEMORY_ORDER);
+        this->thread_parser_ = std::thread{&XCrossfire::receive_crsf, this}; return true;
     }
 
     bool XCrossfire::close_port() {
-        const auto is_closed = this->uart_serial_.close_port() == 0;
+        this->is_paired_.store(false, STD_MEMORY_ORDER);
         if (this->thread_parser_.joinable()) { this->thread_parser_.join(); }
-        this->is_paired_.store(false, STD_MEMORY_ORDER); return is_closed;
+        return this->uart_serial_.close_port() == 0;
     }
 
     bool XCrossfire::set_battery_telemetry(const float voltage, const float current, const uint32_t capacity, const uint8_t percent) const {
@@ -104,6 +105,7 @@ namespace crossfire {
 
     void XCrossfire::receive_crsf() {
         std::vector<uint8_t> buffer(3, CRSF_INIT); uint8_t byte = CRSF_INIT;
+        this->timeout_ = std::chrono::high_resolution_clock::now();
         while (this->is_paired_.load(STD_MEMORY_ORDER)) {
             if (read(this->uart_fd_, &byte, 1)) {
                 if (byte == CRSF_SYNC && buffer[0] == CRSF_INIT) { buffer[0] = byte; continue; }
