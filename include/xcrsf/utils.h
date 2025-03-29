@@ -27,10 +27,34 @@
 
 namespace crossfire {
     /**
-     * @brief Swap the byte order.
+     * @brief Swap the byte order an int16_t value.
      *
      * @param value The value to swap.
      * @return The swapped value.
      */
-    uint16_t swap_byte_order(uint16_t value);
+    int16_t swap_byte_order_int16(int16_t value);
+
+    /**
+     * @brief Swap the byte order of an uint16_t value.
+     *
+     * @param value The value to swap.
+     * @return The swapped value.
+     */
+    uint16_t swap_byte_order_uint16(uint16_t value);
+
+    /**
+     * @brief Swap the byte order an int32_t value.
+     *
+     * @param value The value to swap.
+     * @return The swapped value.
+     */
+    int32_t swap_byte_order_int32(int32_t value);
+
+    /**
+     * @brief Swap the byte order an uint32_t value.
+     *
+     * @param value The value to swap.
+     * @return The swapped value.
+     */
+    uint32_t swap_byte_order_uint32(uint32_t value);
 } // namespace crossfire

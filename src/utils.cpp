@@ -25,7 +25,21 @@
 #include <xcrsf/utils.h>
 
 namespace crossfire {
-    uint16_t swap_byte_order(const uint16_t value) {
+    int16_t swap_byte_order_int16(const int16_t value) {
+        const auto result = value >> 8 | value << 8;
+        return static_cast<int16_t>(result);
+    }
+
+    uint16_t swap_byte_order_uint16(const uint16_t value) {
         return value >> 8 | value << 8;
+    }
+
+    int32_t swap_byte_order_int32(const int32_t value) {
+        const auto result = (value & 0xFF000000) >> 24 | (value & 0x00FF0000) >> 8 | (value & 0x0000FF00) << 8 | (value & 0x000000FF) << 24;
+        return static_cast<int32_t>(result);
+    }
+
+    uint32_t swap_byte_order_uint32(const uint32_t value) {
+        return (value & 0xFF000000) >> 24 | (value & 0x00FF0000) >> 8 | (value & 0x0000FF00) << 8 | (value & 0x000000FF) << 24;
     }
 } // namespace crossfire

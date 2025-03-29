@@ -57,7 +57,6 @@ namespace crossfire {
         options.c_cflag &= ~CBAUD;
         options.c_cflag |= BOTHER;
         options.c_cflag |= CLOCAL;
-        options.c_cflag |= HUPCL;
         options.c_cflag |= CREAD;
         options.c_cflag |= CS8;
 
