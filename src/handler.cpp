@@ -35,7 +35,9 @@ namespace crossfire {
 
     Handler::Handler(const std::string &uart_path, const speed_t baud_rate): uart_serial_(uart_path, baud_rate) { }
 
-    Handler::~Handler() { }
+    Handler::~Handler() {
+        this->close_port();
+    }
 
     bool Handler::open_port() {
         if (is_paired.load(STD_MEMORY_ORDER)) { return false; }
@@ -73,10 +75,10 @@ namespace crossfire {
         if (crsf_cata[0] == CRSF_SYNC_BYTE && crsf_cata[2] == CRSF_FRAMETYPE_LINK_STATISTICS) {
             if (crsf_cata[1] < 12) { return; }
             this->link_state_.uplink_rssi_antenna_1 = crsf_cata[3]; this->link_state_.uplink_rssi_antenna_2 = crsf_cata[4];
-            this->link_state_.uplink_link_quality = crsf_cata[5]; this->link_state_.uplink_snr = crsf_cata[6];
+            this->link_state_.uplink_link_quality = crsf_cata[5]; this->link_state_.uplink_snr = static_cast<int8_t>(crsf_cata[6]);
             this->link_state_.active_antenna = crsf_cata[7]; this->link_state_.rf_Mode = crsf_cata[8];
             this->link_state_.uplink_tx_power = crsf_cata[9]; this->link_state_.downlink_rssi_antenna = crsf_cata[10];
-            this->link_state_.downlink_link_quality = crsf_cata[11]; this->link_state_.downlink_snr = crsf_cata[12];
+            this->link_state_.downlink_link_quality = crsf_cata[11]; this->link_state_.downlink_snr = static_cast<int8_t>(crsf_cata[12]);
         }
     }
 
