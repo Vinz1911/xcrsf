@@ -30,24 +30,25 @@ namespace crossfire {
      * @brief The CRSF Protocol packet type bytes.
      */
     enum CRSFPacket: uint8_t {
-        CRSF_INIT = 0x00,
         CRSF_SYNC = 0xC8,
         CRSF_GPS = 0x02,
         CRSF_VARIO = 0x07,
         CRSF_BATTERY_SENSOR = 0x08,
         CRSF_BARO_ALTITUDE = 0x09,
-        CRSF_LINK_STATE = 0x0A,
+        CRSF_LINK_STATE = 0x14,
         CRSF_RC_CHANNEL = 0x16,
         CRSF_MAX_PACKET = 0x3C,
-        CRSF_ATTITUDE = 0x1E
+        CRSF_ATTITUDE = 0x1E,
+        CRSF_LINK_PAYLOAD_LENGTH = 0x0C,
+        CRSF_RC_PAYLOAD_LENGTH = 0x18,
     };
 
     /**
      * @brief The link statistics struct.
      */
     struct CRSFLink {
-        uint8_t uplink_rssi_antenna_left;
-        uint8_t uplink_rssi_antenna_right;
+        uint8_t uplink_rssi_antenna_1;
+        uint8_t uplink_rssi_antenna_2;
         uint8_t uplink_link_quality;
         int8_t uplink_snr;
         uint8_t active_antenna;
@@ -61,40 +62,38 @@ namespace crossfire {
     /**
      * @brief The Vario struct.
      */
-    #pragma pack(push, 1)
-    struct CRSFVario {
+    typedef struct __attribute__((packed)) {
         int16_t vertical_speed;
-    };
+    } CRSFVario;
 
     /**
      * @brief The Battery struct.
      */
-    struct CRSFBattery {
+    typedef struct __attribute__((packed)) {
         uint16_t voltage;
         uint16_t current;
         uint32_t capacity: 24;
         uint8_t percent;
-    };
+    } CRSFBattery;
 
     /**
      * @brief The Attitude struct.
      */
-    struct CRSFAttitude {
+    typedef struct __attribute__((packed)) {
         uint16_t pitch;
         uint16_t roll;
         uint16_t yaw;
-    };
+    } CRSFAttitude;
 
     /**
      * @brief The GPS struct.
      */
-    struct CRSFGlobalPosition {
+    typedef struct __attribute__((packed)) {
         int32_t latitude;
         int32_t longitude;
         uint16_t groundspeed;
         uint16_t heading;
         uint16_t altitude;
         uint8_t satellites;
-    };
-    #pragma pack(pop)
+    } CRSFGlobalPosition;
 } // namespace crossfire

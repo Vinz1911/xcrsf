@@ -23,6 +23,7 @@
  */
 
 #pragma once
+#include <cstdint>
 
 namespace crossfire {
     class CRCValidator {

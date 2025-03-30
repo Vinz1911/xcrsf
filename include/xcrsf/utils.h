@@ -57,4 +57,13 @@ namespace crossfire {
      * @return The swapped value.
      */
     uint32_t swap_byte_order_uint32(uint32_t value);
+
+    /**
+     * @brief Parse CRSF Channel information.
+     *
+     * @param data The payload data.
+     * @param index The current index.
+     * @return The parsed channel information.
+     */
+    uint16_t get_channel_data(const uint8_t* data, int index);
 } // namespace crossfire

@@ -42,4 +42,10 @@ namespace crossfire {
     uint32_t swap_byte_order_uint32(const uint32_t value) {
         return (value & 0xFF000000) >> 24 | (value & 0x00FF0000) >> 8 | (value & 0x0000FF00) << 8 | (value & 0x000000FF) << 24;
     }
+
+    uint16_t get_channel_data(const uint8_t* data, const int index) {
+        const int bit_position = index * 11, byte_index = 3 + bit_position / 8, bit_offset = bit_position % 8;
+        uint16_t value = data[byte_index] >> bit_offset | data[byte_index + 1] << (8 - bit_offset);
+        if (bit_offset > 5) { value |= data[byte_index + 2] << (16 - bit_offset); } return value & 0x07FF;
+    }
 } // namespace crossfire

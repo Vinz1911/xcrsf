@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Source files
-set(SRC_LIST src/crossfire.cpp src/serial.cpp src/crc.cpp src/utils.cpp)
+set(SRC_LIST src/crossfire.cpp src/serial.cpp src/crc.cpp src/utils.cpp src/handler.cpp)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # Build shared library

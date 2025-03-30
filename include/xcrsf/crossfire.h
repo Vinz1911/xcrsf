@@ -27,74 +27,14 @@
 #include <thread>
 #include <atomic>
 
-#include "xcrsf/serial.h"
-#include "xcrsf/definitions.h"
+#include "xcrsf/handler.h"
 
 namespace crossfire {
     class XCrossfire {
         /**
          * @brief The file descriptor.
          */
-        int uart_fd_ = -1;
-
-        /**
-         * @brief Instance of UARTSerial.
-         */
-        UARTSerial uart_serial_;
-
-        /**
-         * @brief The channel state.
-         */
-        std::array<uint16_t, 16> channel_state_{};
-
-        /**
-         * @brief The link state.
-         */
-        CRSFLink link_state_{};
-
-        /**
-         * @brief Timestamp for timeout.
-         */
-        std::chrono::system_clock::time_point timeout_{};
-
-        /**
-         * @brief Indicator of pairing status.
-         */
-        std::atomic<bool> is_paired_{};
-
-        /**
-         * @brief Mutex lock for channel data.
-         */
-        std::mutex crsf_lock_;
-
-        /**
-         * @brief The parser thread.
-         */
-        std::thread thread_parser_;
-
-        /**
-         * @brief Send CRSF Protocol message.
-         *
-         * @param packet The packet type.
-         * @param payload The payload data.
-         * @return True on success otherwise False.
-         */
-        [[nodiscard]] bool send_crsf(uint8_t packet, const std::vector<uint8_t>& payload) const;
-
-        /**
-         * @brief Parse CRSF Protocol message.
-         */
-        void receive_crsf();
-
-        /**
-         * @brief Update the channel information.
-         */
-        void update_state(const uint8_t* crsf_cata);
-
-        /**
-         * @brief Extract the channel information from the payload.
-         */
-        static uint16_t extract_channel(const uint8_t* data, int index);
+        Handler handler_;
 
     public:
         /**
