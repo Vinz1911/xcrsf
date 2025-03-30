@@ -79,7 +79,7 @@ namespace crossfire {
          *
          * @param crsf_cata The payload data.
          */
-        void parse_payload(const uint8_t* crsf_cata);
+        void parse_message(const uint8_t* crsf_cata);
 
     public:
         /**

@@ -64,7 +64,7 @@ namespace crossfire {
         vario.vertical_speed = swap_byte_order_int16(static_cast<int16_t>(vertical_speed * 100));
 
         const std::vector payload(reinterpret_cast<uint8_t*>(&vario), reinterpret_cast<uint8_t*>(&vario) + sizeof(CRSFVario));
-        return this->handler_.send_crsf(CRSF_VARIO, payload);
+        return this->handler_.send_crsf(CRSF_FRAMETYPE_VARIO, payload);
     }
 
     bool XCrossfire::set_telemetry_battery(const float voltage, const float current, const uint32_t capacity, const uint8_t percent) const {
@@ -75,7 +75,7 @@ namespace crossfire {
         battery.percent = percent;
 
         const std::vector payload(reinterpret_cast<uint8_t*>(&battery), reinterpret_cast<uint8_t*>(&battery) + sizeof(CRSFBattery));
-        return this->handler_.send_crsf(CRSF_BATTERY_SENSOR, payload);
+        return this->handler_.send_crsf(CRSF_FRAMETYPE_BATTERY_SENSOR, payload);
     }
 
     bool XCrossfire::set_telemetry_attitude(const uint16_t pitch, const uint16_t roll, const uint16_t yaw) const {
@@ -85,7 +85,7 @@ namespace crossfire {
         attitude.yaw = swap_byte_order_uint16(yaw);
 
         const std::vector payload(reinterpret_cast<uint8_t*>(&attitude), reinterpret_cast<uint8_t*>(&attitude) + sizeof(CRSFAttitude));
-        return this->handler_.send_crsf(CRSF_ATTITUDE, payload);
+        return this->handler_.send_crsf(CRSF_FRAMETYPE_ATTITUDE, payload);
     }
 
     bool XCrossfire::set_telemetry_gps(const float latitude, const float longitude, const uint16_t groundspeed, const uint16_t heading, const uint16_t altitude, const uint8_t satellites) const {
@@ -98,6 +98,6 @@ namespace crossfire {
         global_position.satellites = satellites;
 
         const std::vector payload(reinterpret_cast<uint8_t*>(&global_position), reinterpret_cast<uint8_t*>(&global_position) + sizeof(CRSFGlobalPosition));
-        return this->handler_.send_crsf(CRSF_GPS, payload);
+        return this->handler_.send_crsf(CRSF_FRAMETYPE_GPS, payload);
     }
 } // namespace crossfire

@@ -30,17 +30,15 @@ namespace crossfire {
      * @brief The CRSF Protocol packet type bytes.
      */
     enum CRSFPacket: uint8_t {
-        CRSF_SYNC = 0xC8,
-        CRSF_GPS = 0x02,
-        CRSF_VARIO = 0x07,
-        CRSF_BATTERY_SENSOR = 0x08,
-        CRSF_BARO_ALTITUDE = 0x09,
-        CRSF_LINK_STATE = 0x14,
-        CRSF_RC_CHANNEL = 0x16,
-        CRSF_MAX_PACKET = 0x3C,
-        CRSF_ATTITUDE = 0x1E,
-        CRSF_LINK_PAYLOAD_LENGTH = 0x0C,
-        CRSF_RC_PAYLOAD_LENGTH = 0x18,
+        CRSF_SYNC_BYTE = 0xC8,
+        CRSF_FRAMETYPE_GPS = 0x02,
+        CRSF_FRAMETYPE_VARIO = 0x07,
+        CRSF_FRAMETYPE_BATTERY_SENSOR = 0x08,
+        CRSF_FRAMETYPE_BARO_ALTITUDE = 0x09,
+        CRSF_FRAMETYPE_LINK_STATISTICS = 0x14,
+        CRSF_FRAMETYPE_RC_CHANNELS_PACKED = 0x16,
+        CRSF_FRAMETYPE_ATTITUDE = 0x1E,
+        CRSF_MAX_FRAME_SIZE = 0x40
     };
 
     /**
