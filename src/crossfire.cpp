@@ -80,9 +80,9 @@ namespace crossfire {
 
     bool XCrossfire::set_telemetry_attitude(const double pitch, const double roll, const double yaw) const {
         auto attitude = CRSFAttitude{};
-        attitude.pitch = get_big_endian_uint16(static_cast<uint16_t>(pitch >= 0 ? pitch / 3.27 * 32767 : (pitch + 3.27) / 3.27 * 32767 + 32768));
-        attitude.roll = get_big_endian_uint16(static_cast<uint16_t>(roll >= 0 ? roll / 3.27 * 32767 : (roll + 3.27) / 3.27 * 32767 + 32768));
-        attitude.yaw = get_big_endian_uint16(static_cast<uint16_t>(yaw >= 0 ? yaw / 3.27 * 32767 : (yaw + 3.27) / 3.27 * 32767 + 32768));
+        attitude.pitch = get_big_endian_uint16(static_cast<uint16_t>(get_attitude(pitch)));
+        attitude.roll = get_big_endian_uint16(static_cast<uint16_t>(get_attitude(roll)));
+        attitude.yaw = get_big_endian_uint16(static_cast<uint16_t>(get_attitude(yaw)));
 
         const std::vector payload(reinterpret_cast<uint8_t*>(&attitude), reinterpret_cast<uint8_t*>(&attitude) + sizeof(CRSFAttitude));
         return this->handler_.send_crsf(CRSF_FRAMETYPE_ATTITUDE, payload);

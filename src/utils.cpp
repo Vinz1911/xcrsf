@@ -48,4 +48,8 @@ namespace crossfire {
         uint16_t value = data[byte_index] >> bit_offset | data[byte_index + 1] << (8 - bit_offset);
         if (bit_offset > 5) { value |= data[byte_index + 2] << (16 - bit_offset); } return value & 0x07FF;
     }
+
+    double get_attitude(const double value) {
+        return value >= 0 ? value / 3.27 * 32767 : (value + 3.27) / 3.27 * 32767 + 32768;
+    }
 } // namespace crossfire
