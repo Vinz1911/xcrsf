@@ -34,8 +34,11 @@ int main() {
     while (crossfire.is_paired()) {
         const auto channels = crossfire.get_channel_state();
         for (int i = 0; i < 4; i++) {
-            //if (channels.front() != 0) { std::printf("Channel %d: %u\n", i, channels[i]); }
+            if (channels.front() != 0) { std::printf("Channel %d: %u\n", i, channels[i]); }
         }
+
+        const auto link = crossfire.get_link_state();
+        std::printf("RSSI Antenna 1 %u, Antenna 2 %u\n", link.uplink_rssi_antenna_1, link.uplink_rssi_antenna_2);
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
     return 0;

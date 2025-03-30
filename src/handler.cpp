@@ -90,8 +90,7 @@ namespace crossfire {
     }
 
     void Handler::receive_crsf() {
-        std::vector<uint8_t> buffer(0, 0x00); uint8_t byte = 0x00;
-        this->timeout_ = std::chrono::high_resolution_clock::now();
+        std::vector<uint8_t> buffer(0, 0x00); uint8_t byte = 0x00; this->timeout_ = std::chrono::high_resolution_clock::now();
         while (this->is_paired.load(STD_MEMORY_ORDER)) {
             const auto is_read = read(this->uart_fd_, &byte, 1);
             if (std::chrono::high_resolution_clock::now() > this->timeout_ + STD_TIMEOUT) { this->is_paired.store(false, STD_MEMORY_ORDER); }

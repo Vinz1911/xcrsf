@@ -42,6 +42,10 @@ int main() {
         const auto channels = crossfire.get_channels();
         this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+    
+    // Get link statistics
+    const auto link = crossfire.get_link_state();
+    std::printf("RSSI Antenna 1 %u, Antenna 2 %u\n", link.uplink_rssi_antenna_1, link.uplink_rssi_antenna_2);
     return 0;
 }
 ```
@@ -53,9 +57,18 @@ int main() {
     // Create instance of XCrossfire
     auto crossfire = crossfire::XCrossfire("/dev/ttyAMA10");
     if (crossfire.open_port()) { std::printf("Port opened...\n"); }
-    
-    // Send Telemetry
-    crossfire.set_battery_telemetry(12.0, 16.0, 8500, 95);
+
+    // Send Battery Telemetry
+    crossfire.set_telemetry_battery(12.0, 16.0, 8500, 95);
+
+    // Send Vario (Vertical Speed) Telemetry
+    crossfire.set_telemetry_vario(100);
+
+    // Send Attitude (Pitch, Roll, Yaw) Telemetry
+    crossfire.set_telemetry_attitude(100, 100, 100);
+
+    // Send GPS Telemetry
+    crossfire.set_telemetry_gps(40.234, -37.365, 100, 100, 100, 2);
     return 0;
 }
 ```

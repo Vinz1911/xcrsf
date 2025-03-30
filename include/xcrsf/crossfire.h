@@ -51,6 +51,27 @@ namespace crossfire {
         ~XCrossfire();
 
         /**
+         * @brief Status if receiver is paired.
+         *
+         * @return True if paired otherwise False.
+         */
+        [[nodiscard]] bool is_paired() const;
+
+        /**
+         * @brief Open serial connection.
+         *
+         * @return True on success otherwise False.
+         */
+        [[nodiscard]] bool open_port();
+
+        /**
+        * @brief Close serial connection.
+        *
+        * @return True on success otherwise False.
+        */
+        bool close_port();
+
+        /**
          * @brief Get the link state information.
          *
          * @return The link statistic's.
@@ -105,26 +126,5 @@ namespace crossfire {
          * @return True on success otherwise False.
          */
         [[nodiscard]] bool set_telemetry_gps(float latitude, float longitude, uint16_t groundspeed, uint16_t heading, uint16_t altitude, uint8_t satellites) const;
-
-        /**
-         * @brief Status if receiver is paired.
-         *
-         * @return True if paired otherwise False.
-         */
-        [[nodiscard]] bool is_paired() const;
-
-        /**
-         * @brief Open serial connection.
-         *
-         * @return True on success otherwise False.
-         */
-        [[nodiscard]] bool open_port();
-
-        /**
-        * @brief Close serial connection.
-        *
-        * @return True on success otherwise False.
-        */
-        bool close_port();
     };
 } // namespace crossfire
