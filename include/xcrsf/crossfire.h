@@ -91,7 +91,7 @@ namespace crossfire {
          * @param vertical_speed The speed in m/s.
          * @return True on success otherwise False.
          */
-        [[nodiscard]] bool set_telemetry_vario(int16_t vertical_speed) const;
+        [[nodiscard]] bool set_telemetry_vario(double vertical_speed) const;
 
         /**
          * @brief Send battery telemetry data back to the transmitter.
@@ -102,7 +102,7 @@ namespace crossfire {
          * @param percent The Percent from the power source.
          * @return True on success otherwise False.
          */
-        [[nodiscard]] bool set_telemetry_battery(float voltage, float current, uint32_t capacity, uint8_t percent) const;
+        [[nodiscard]] bool set_telemetry_battery(double voltage, double current, uint32_t capacity, uint8_t percent) const;
 
         /**
          * @brief Send attitude telemetry data back to the transmitter.
@@ -112,7 +112,7 @@ namespace crossfire {
          * @param yaw in radiant's.
          * @return True on success otherwise False.
          */
-        [[nodiscard]] bool set_telemetry_attitude(uint16_t pitch, uint16_t roll, uint16_t yaw) const;
+        [[nodiscard]] bool set_telemetry_attitude(double pitch, double roll, double yaw) const;
 
         /**
          * @brief Send gps telemetry data back to the transmitter.
@@ -125,6 +125,6 @@ namespace crossfire {
          * @param satellites The satellite count.
          * @return True on success otherwise False.
          */
-        [[nodiscard]] bool set_telemetry_gps(float latitude, float longitude, uint16_t groundspeed, uint16_t heading, uint16_t altitude, uint8_t satellites) const;
+        [[nodiscard]] bool set_telemetry_gps(double latitude, double longitude, double groundspeed, double heading, double altitude, uint8_t satellites) const;
     };
 } // namespace crossfire

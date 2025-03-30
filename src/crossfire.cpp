@@ -59,45 +59,45 @@ namespace crossfire {
         return this->handler_.get_channel_state();
     }
 
-    bool XCrossfire::set_telemetry_vario(const int16_t vertical_speed) const {
+    bool XCrossfire::set_telemetry_vario(const double vertical_speed) const {
         auto vario = CRSFVario{};
-        vario.vertical_speed = swap_byte_order_int16(static_cast<int16_t>(vertical_speed * 100));
+        vario.vertical_speed = get_big_endian_int16(static_cast<int16_t>(vertical_speed * 100));
 
         const std::vector payload(reinterpret_cast<uint8_t*>(&vario), reinterpret_cast<uint8_t*>(&vario) + sizeof(CRSFVario));
         return this->handler_.send_crsf(CRSF_FRAMETYPE_VARIO, payload);
     }
 
-    bool XCrossfire::set_telemetry_battery(const float voltage, const float current, const uint32_t capacity, const uint8_t percent) const {
+    bool XCrossfire::set_telemetry_battery(const double voltage, const double current, const uint32_t capacity, const uint8_t percent) const {
         auto battery = CRSFBattery{};
-        battery.voltage = swap_byte_order_uint16(static_cast<uint16_t>(voltage * 10));
-        battery.current = swap_byte_order_uint16(static_cast<uint16_t>(current * 10));
-        battery.capacity = swap_byte_order_uint16(capacity) << 8;
+        battery.voltage = get_big_endian_uint16(static_cast<uint16_t>(voltage * 10));
+        battery.current = get_big_endian_uint16(static_cast<uint16_t>(current * 10));
+        battery.capacity = get_big_endian_uint16(capacity) << 8;
         battery.percent = percent;
 
         const std::vector payload(reinterpret_cast<uint8_t*>(&battery), reinterpret_cast<uint8_t*>(&battery) + sizeof(CRSFBattery));
         return this->handler_.send_crsf(CRSF_FRAMETYPE_BATTERY_SENSOR, payload);
     }
 
-    bool XCrossfire::set_telemetry_attitude(const uint16_t pitch, const uint16_t roll, const uint16_t yaw) const {
+    bool XCrossfire::set_telemetry_attitude(const double pitch, const double roll, const double yaw) const {
         auto attitude = CRSFAttitude{};
-        attitude.pitch = swap_byte_order_uint16(pitch);
-        attitude.roll = swap_byte_order_uint16(roll);
-        attitude.yaw = swap_byte_order_uint16(yaw);
+        attitude.pitch = get_big_endian_uint16(static_cast<uint16_t>(pitch >= 0 ? pitch / 3.27 * 32767 : (pitch + 3.27) / 3.27 * 32767 + 32768));
+        attitude.roll = get_big_endian_uint16(static_cast<uint16_t>(roll >= 0 ? roll / 3.27 * 32767 : (roll + 3.27) / 3.27 * 32767 + 32768));
+        attitude.yaw = get_big_endian_uint16(static_cast<uint16_t>(yaw >= 0 ? yaw / 3.27 * 32767 : (yaw + 3.27) / 3.27 * 32767 + 32768));
 
         const std::vector payload(reinterpret_cast<uint8_t*>(&attitude), reinterpret_cast<uint8_t*>(&attitude) + sizeof(CRSFAttitude));
         return this->handler_.send_crsf(CRSF_FRAMETYPE_ATTITUDE, payload);
     }
 
-    bool XCrossfire::set_telemetry_gps(const float latitude, const float longitude, const uint16_t groundspeed, const uint16_t heading, const uint16_t altitude, const uint8_t satellites) const {
-        auto global_position = CRSFGlobalPosition{};
-        global_position.latitude = swap_byte_order_int32(static_cast<int32_t>(latitude * 1e7));
-        global_position.longitude = swap_byte_order_int32(static_cast<int32_t>(longitude * 1e7));
-        global_position.groundspeed = swap_byte_order_uint16(groundspeed * 10);
-        global_position.heading = swap_byte_order_uint16(heading * 100);
-        global_position.altitude = swap_byte_order_uint16(altitude + 1000);
-        global_position.satellites = satellites;
+    bool XCrossfire::set_telemetry_gps(const double latitude, const double longitude, const double groundspeed, const double heading, const double altitude, const uint8_t satellites) const {
+        auto gps = CRSFGlobalPosition{};
+        gps.latitude = get_big_endian_int32(static_cast<int32_t>(latitude * 1e7));
+        gps.longitude = get_big_endian_int32(static_cast<int32_t>(longitude * 1e7));
+        gps.groundspeed = get_big_endian_uint16(static_cast<uint16_t>(groundspeed * 10));
+        gps.heading = get_big_endian_uint16(static_cast<uint16_t>(heading * 100));
+        gps.altitude = get_big_endian_uint16(static_cast<uint16_t>(altitude + 1000));
+        gps.satellites = satellites;
 
-        const std::vector payload(reinterpret_cast<uint8_t*>(&global_position), reinterpret_cast<uint8_t*>(&global_position) + sizeof(CRSFGlobalPosition));
+        const std::vector payload(reinterpret_cast<uint8_t*>(&gps), reinterpret_cast<uint8_t*>(&gps) + sizeof(CRSFGlobalPosition));
         return this->handler_.send_crsf(CRSF_FRAMETYPE_GPS, payload);
     }
 } // namespace crossfire

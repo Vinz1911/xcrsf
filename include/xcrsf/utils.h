@@ -32,7 +32,7 @@ namespace crossfire {
      * @param value The value to swap.
      * @return The swapped value.
      */
-    int16_t swap_byte_order_int16(int16_t value);
+    int16_t get_big_endian_int16(int16_t value);
 
     /**
      * @brief Swap the byte order of an uint16_t value.
@@ -40,7 +40,7 @@ namespace crossfire {
      * @param value The value to swap.
      * @return The swapped value.
      */
-    uint16_t swap_byte_order_uint16(uint16_t value);
+    uint16_t get_big_endian_uint16(uint16_t value);
 
     /**
      * @brief Swap the byte order an int32_t value.
@@ -48,7 +48,7 @@ namespace crossfire {
      * @param value The value to swap.
      * @return The swapped value.
      */
-    int32_t swap_byte_order_int32(int32_t value);
+    int32_t get_big_endian_int32(int32_t value);
 
     /**
      * @brief Swap the byte order an uint32_t value.
@@ -56,7 +56,7 @@ namespace crossfire {
      * @param value The value to swap.
      * @return The swapped value.
      */
-    uint32_t swap_byte_order_uint32(uint32_t value);
+    uint32_t get_big_endian_uint32(uint32_t value);
 
     /**
      * @brief Parse CRSF Channel information.

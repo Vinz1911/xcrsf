@@ -92,7 +92,7 @@ namespace crossfire {
     }
 
     void Handler::receive_crsf() {
-        std::vector<uint8_t> buffer(0, 0x00); uint8_t byte = 0x00; this->timeout_ = std::chrono::high_resolution_clock::now();
+        std::vector<uint8_t> buffer(0, 0x0); uint8_t byte = 0x0; this->timeout_ = std::chrono::high_resolution_clock::now();
         while (this->is_paired.load(STD_MEMORY_ORDER)) {
             const auto is_read = read(this->uart_fd_, &byte, 1);
             if (std::chrono::high_resolution_clock::now() > this->timeout_ + STD_TIMEOUT) { this->is_paired.store(false, STD_MEMORY_ORDER); }
@@ -102,7 +102,7 @@ namespace crossfire {
             if (buffer.size() < 3 || buffer.size() < buffer[1] + 2) { buffer.emplace_back(byte);
                 if (buffer.size() == buffer[1] + 2 && CRCValidator::get_crc8(&buffer[2], buffer[1] - 1) == buffer[buffer[1] + 1]) { this->parse_message(buffer.data()); }
                 if (buffer[2] == CRSF_FRAMETYPE_RC_CHANNELS_PACKED) { this->timeout_ = std::chrono::high_resolution_clock::now(); }
-                if (buffer.size() >= buffer[1] + 2) { buffer.assign(0, 0x00); }
+                if (buffer.size() >= buffer[1] + 2) { buffer.assign(0, 0x0); }
             }
         }
     }
