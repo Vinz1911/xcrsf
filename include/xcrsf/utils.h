@@ -65,7 +65,7 @@ namespace crossfire {
      * @param index The current index.
      * @return The parsed channel information.
      */
-    uint16_t get_channel_data(const uint8_t* data, int index);
+    uint16_t get_channel_value(const uint8_t* data, int index);
 
     /**
      * @brief Convert attitude value.

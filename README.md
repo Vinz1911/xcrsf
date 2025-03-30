@@ -65,7 +65,7 @@ int main() {
     crossfire.set_telemetry_vario(100);
 
     // Send Attitude (Pitch, Roll, Yaw) Telemetry
-    crossfire.set_telemetry_attitude(100, 100, 100);
+    crossfire.set_telemetry_attitude(1.0, 1.0, -2.0);
 
     // Send GPS Telemetry
     crossfire.set_telemetry_gps(40.234, -37.365, 100, 100, 100, 2);

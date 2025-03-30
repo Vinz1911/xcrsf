@@ -69,7 +69,7 @@ namespace crossfire {
         std::lock_guard lock(this->crsf_lock_);
         if (crsf_cata[0] == CRSF_SYNC_BYTE && crsf_cata[2] == CRSF_FRAMETYPE_RC_CHANNELS_PACKED) {
             if (crsf_cata[1] < 24) { return; }
-            for (int i = 0; i < 16; i++) { this->channel_state_[i] = get_channel_data(crsf_cata, i); }
+            for (int i = 0; i < 16; i++) { this->channel_state_[i] = get_channel_value(crsf_cata, i); }
         }
 
         if (crsf_cata[0] == CRSF_SYNC_BYTE && crsf_cata[2] == CRSF_FRAMETYPE_LINK_STATISTICS) {
