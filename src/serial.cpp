@@ -26,10 +26,14 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <utility>
+#include <thread>
 
 #include "xcrsf/serial.h"
 
 namespace crossfire {
+    static constexpr auto STD_RETRY_COUNT = 5;
+    static constexpr auto STD_RETRY_SLEEP = std::chrono::milliseconds(100);
+
     UARTSerial::UARTSerial(std::string uart_path, const speed_t baud_rate): uart_path_(std::move(uart_path)), baud_rate_(baud_rate) { }
 
     UARTSerial::~UARTSerial() {
@@ -42,34 +46,32 @@ namespace crossfire {
 
         const auto status = this->reconfigure_port(this->baud_rate_);
         if (status == -1) { close(this->uart_fd_); return status; }
-        return this->uart_fd_;
+        auto is_active = port_active(); auto retry_count = 0;
+
+        while (!is_active && retry_count < STD_RETRY_COUNT) { std::this_thread::sleep_for(STD_RETRY_SLEEP); ++retry_count; is_active = port_active(); }
+        if (retry_count == STD_RETRY_COUNT) { close(this->uart_fd_); return -1; } return this->uart_fd_;
     }
 
     int UARTSerial::close_port() const {
         return close(this->uart_fd_);
     }
 
+    bool UARTSerial::port_active() const {
+        const auto byte_count = write(this->uart_fd_, std::string{}.data(), 0x0);
+        return byte_count != -1;
+    }
+
     int UARTSerial::reconfigure_port(const speed_t baud_rate) const {
-        termios2 options{}; int status{};
-        status = ioctl(this->uart_fd_, TCGETS2, &options);
-        if (status == -1) { return status; }
+        termios2 config{}; int status{};
+        status = ioctl(this->uart_fd_, TCGETS2, &config);
+        if (status == -1 || config.c_ispeed == baud_rate) { return status; }
 
-        options.c_cflag &= ~CBAUD;
-        options.c_cflag |= BOTHER;
-        options.c_cflag |= CLOCAL;
-        options.c_cflag |= CREAD;
-        options.c_cflag |= CS8;
+        config.c_cflag &= ~CBAUD;
+        config.c_cflag |= BOTHER | CLOCAL | CREAD | HUPCL | CS8;
+        config.c_ispeed = baud_rate; config.c_ospeed = baud_rate;
+        config.c_iflag = 0; config.c_oflag = 0; config.c_lflag = 0;
+        config.c_cc[VTIME] = 0; config.c_cc[VMIN] = 0;
 
-        options.c_ispeed = baud_rate;
-        options.c_ospeed = baud_rate;
-
-        options.c_iflag = 0;
-        options.c_oflag = 0;
-        options.c_lflag = 0;
-
-        options.c_cc[VTIME] = 0;
-        options.c_cc[VMIN] = 0;
-
-        status = ioctl(this->uart_fd_, TCSETS2, &options); return status;
+        status = ioctl(this->uart_fd_, TCSETS2, &config); return status;
     }
 } // namespace crossfire

@@ -28,6 +28,7 @@
 #include <chrono>
 #include <thread>
 #include <vector>
+#include <functional>
 
 #include "xcrsf/serial.h"
 #include "xcrsf/definitions.h"
@@ -40,19 +41,14 @@ namespace crossfire {
         int uart_fd_ = -1;
 
         /**
+         * @brief Indicator of pairing status.
+         */
+        std::atomic<bool> is_paired_{};
+
+        /**
          * @brief Instance of UARTSerial.
          */
         UARTSerial uart_serial_;
-
-        /**
-         * @brief The channel state.
-         */
-        std::array<uint16_t, 16> channel_state_{};
-
-        /**
-         * @brief The link state.
-         */
-        CRSFLink link_state_{};
 
         /**
          * @brief Timestamp for timeout.
@@ -60,26 +56,19 @@ namespace crossfire {
         std::chrono::system_clock::time_point timeout_{};
 
         /**
-         * @brief Mutex lock for channel data.
-         */
-        std::mutex crsf_lock_;
-
-        /**
          * @brief The parser thread.
          */
         std::thread thread_parser_;
 
         /**
+         * @brief The crsf protocol data callback.
+         */
+        std::function<void(std::vector<uint8_t>&)> state_callback_;
+
+        /**
          * @brief Parse CRSF Protocol message.
          */
         void receive_crsf();
-
-        /**
-         * @brief Update the channel and link information.
-         *
-         * @param crsf_cata The payload data.
-         */
-        void parse_message(const uint8_t* crsf_cata);
 
     public:
         /**
@@ -96,11 +85,6 @@ namespace crossfire {
         ~Handler();
 
         /**
-         * @brief Indicator of pairing status.
-         */
-        std::atomic<bool> is_paired{};
-
-        /**
          * @brief Open serial connection.
          *
          * @return True on success otherwise False.
@@ -115,18 +99,18 @@ namespace crossfire {
         bool close_port();
 
         /**
-         * @brief Get the link state information.
+         * @brief The pairing status.
          *
-         * @return The link statistic's.
+         * @return True if paired otherwise False.
          */
-        CRSFLink get_link_state();
+        [[nodiscard]] bool is_paired() const;
 
         /**
-         * @brief Get the channel state information.
+         * @brief Set the callback to get crsf protocol data.
          *
-         * @return The channel's.
+         * @param completion The completion block.
          */
-        std::array<uint16_t, 16> get_channel_state();
+        void set_callback(std::function<void(std::vector<uint8_t>&)> completion);
 
         /**
          * @brief Send CRSF Protocol message.

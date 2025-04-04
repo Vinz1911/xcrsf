@@ -44,6 +44,13 @@ namespace crossfire {
         speed_t baud_rate_ = 0;
 
         /**
+         * @brief Check if port is active.
+         *
+         * @return True if active otherwise False.
+         */
+        [[nodiscard]] bool port_active() const;
+
+        /**
          * @brief Reconfigure the port's baud rate.
          *
          * @param baud_rate The baud rate.

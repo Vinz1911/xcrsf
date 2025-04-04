@@ -36,6 +36,28 @@ namespace crossfire {
          */
         Handler handler_;
 
+        /**
+         * @brief Mutex lock for channel data.
+         */
+        std::mutex crsf_lock_;
+
+        /**
+         * @brief The channel state.
+         */
+        std::array<uint16_t, 16> channel_state_{};
+
+        /**
+         * @brief The link state.
+         */
+        CRSFLink link_state_{};
+
+        /**
+         * @brief Update the channel and link information.
+         *
+         * @param crsf_cata The payload data.
+         */
+        void parse_message(const uint8_t* crsf_cata);
+
     public:
         /**
          * @brief Create instance of XCrossfire.
@@ -51,13 +73,6 @@ namespace crossfire {
         ~XCrossfire();
 
         /**
-         * @brief Status if receiver is paired.
-         *
-         * @return True if paired otherwise False.
-         */
-        [[nodiscard]] bool is_paired() const;
-
-        /**
          * @brief Open serial connection.
          *
          * @return True on success otherwise False.
@@ -70,6 +85,13 @@ namespace crossfire {
         * @return True on success otherwise False.
         */
         bool close_port();
+
+        /**
+         * @brief Status if receiver is paired.
+         *
+         * @return True if paired otherwise False.
+         */
+        [[nodiscard]] bool is_paired() const;
 
         /**
          * @brief Get the link state information.

@@ -23,6 +23,7 @@
  */
 
 #include <cstring>
+#include <utility>
 
 #include "xcrsf/crc.h"
 #include "xcrsf/handler.h"
@@ -40,50 +41,30 @@ namespace crossfire {
     }
 
     bool Handler::open_port() {
-        if (is_paired.load(STD_MEMORY_ORDER)) { return false; }
         this->uart_fd_ = this->uart_serial_.open_port();
         if (this->uart_fd_ == -1) { return false; }
 
-        this->is_paired.store(true, STD_MEMORY_ORDER);
+        this->is_paired_.store(true, STD_MEMORY_ORDER);
         this->thread_parser_ = std::thread{&Handler::receive_crsf, this};
         return true;
     }
 
     bool Handler::close_port() {
-        this->is_paired.store(false, STD_MEMORY_ORDER);
+        this->is_paired_.store(false, STD_MEMORY_ORDER);
         if (this->thread_parser_.joinable()) { this->thread_parser_.join(); }
         return this->uart_serial_.close_port() == 0;
     }
 
-    CRSFLink Handler::get_link_state() {
-        std::lock_guard lock(this->crsf_lock_);
-        return this->link_state_;
+    bool Handler::is_paired() const {
+        return this->is_paired_.load(STD_MEMORY_ORDER);
     }
 
-    std::array<uint16_t, 16> Handler::get_channel_state() {
-        std::lock_guard lock(this->crsf_lock_);
-        return this->channel_state_;
-    }
-
-    void Handler::parse_message(const uint8_t* crsf_cata) {
-        std::lock_guard lock(this->crsf_lock_);
-        if (crsf_cata[0] == CRSF_SYNC_BYTE && crsf_cata[2] == CRSF_FRAMETYPE_RC_CHANNELS_PACKED) {
-            if (crsf_cata[1] < 24) { return; }
-            for (int i = 0; i < 16; i++) { this->channel_state_[i] = get_channel_value(crsf_cata, i); }
-        }
-
-        if (crsf_cata[0] == CRSF_SYNC_BYTE && crsf_cata[2] == CRSF_FRAMETYPE_LINK_STATISTICS) {
-            if (crsf_cata[1] < 12) { return; }
-            this->link_state_.uplink_rssi_antenna_1 = crsf_cata[3]; this->link_state_.uplink_rssi_antenna_2 = crsf_cata[4];
-            this->link_state_.uplink_link_quality = crsf_cata[5]; this->link_state_.uplink_snr = static_cast<int8_t>(crsf_cata[6]);
-            this->link_state_.active_antenna = crsf_cata[7]; this->link_state_.rf_Mode = crsf_cata[8];
-            this->link_state_.uplink_tx_power = crsf_cata[9]; this->link_state_.downlink_rssi_antenna = crsf_cata[10];
-            this->link_state_.downlink_link_quality = crsf_cata[11]; this->link_state_.downlink_snr = static_cast<int8_t>(crsf_cata[12]);
-        }
+    void Handler::set_callback(std::function<void(std::vector<uint8_t>&)> completion) {
+        this->state_callback_ = std::move(completion);
     }
 
     bool Handler::send_crsf(const uint8_t packet, const std::vector<uint8_t>& payload) const {
-        if (!this->is_paired.load(STD_MEMORY_ORDER) || payload.size() > CRSF_MAX_FRAME_SIZE - 4) { return false; }
+        if (!this->is_paired_.load(STD_MEMORY_ORDER) || payload.size() > CRSF_MAX_FRAME_SIZE - 4) { return false; }
         const auto length = payload.size(); uint8_t buffer[CRSF_MAX_FRAME_SIZE];
         buffer[0] = CRSF_SYNC_BYTE; buffer[1] = length + 2; buffer[2] = packet;
 
@@ -93,14 +74,16 @@ namespace crossfire {
 
     void Handler::receive_crsf() {
         std::vector<uint8_t> buffer(0, 0x0); uint8_t byte = 0x0; this->timeout_ = std::chrono::high_resolution_clock::now();
-        while (this->is_paired.load(STD_MEMORY_ORDER)) {
+        while (this->is_paired_.load(STD_MEMORY_ORDER)) {
             const auto is_read = read(this->uart_fd_, &byte, 1);
-            if (std::chrono::high_resolution_clock::now() > this->timeout_ + STD_TIMEOUT) { this->is_paired.store(false, STD_MEMORY_ORDER); }
+            if (std::chrono::high_resolution_clock::now() > this->timeout_ + STD_TIMEOUT) { this->is_paired_.store(false, STD_MEMORY_ORDER); }
             if (!is_read) { std::this_thread::sleep_for(STD_READ_INTERRUPT); continue; }
             if (byte != CRSF_SYNC_BYTE && buffer.empty()) { continue; }
 
             if (buffer.size() < 3 || buffer.size() < buffer[1] + 2) { buffer.emplace_back(byte);
-                if (buffer.size() == buffer[1] + 2 && CRCValidator::get_crc8(&buffer[2], buffer[1] - 1) == buffer[buffer[1] + 1]) { this->parse_message(buffer.data()); }
+                if (buffer.size() == buffer[1] + 2 && CRCValidator::get_crc8(&buffer[2], buffer[1] - 1) == buffer[buffer[1] + 1]) {
+                    if (this->state_callback_) { this->state_callback_(buffer); }
+                }
                 if (buffer[2] == CRSF_FRAMETYPE_RC_CHANNELS_PACKED) { this->timeout_ = std::chrono::high_resolution_clock::now(); }
                 if (buffer.size() >= buffer[1] + 2) { buffer.assign(0, 0x0); }
             }

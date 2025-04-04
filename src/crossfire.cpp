@@ -40,6 +40,8 @@ namespace crossfire {
     }
 
     bool XCrossfire::open_port() {
+        if (this->handler_.is_paired()) { return false; }
+        this->handler_.set_callback([this](const std::vector<uint8_t>& crsf_data) { this->parse_message(crsf_data.data()); });
         return this->handler_.open_port();
     }
 
@@ -48,15 +50,17 @@ namespace crossfire {
     }
 
     bool XCrossfire::is_paired() const {
-        return this->handler_.is_paired.load(std::memory_order::relaxed);
+        return this->handler_.is_paired();
     }
 
     CRSFLink XCrossfire::get_link_state() {
-        return this->handler_.get_link_state();
+        std::lock_guard lock(this->crsf_lock_);
+        return this->link_state_;
     }
 
     std::array<uint16_t, 16> XCrossfire::get_channel_state() {
-        return this->handler_.get_channel_state();
+        std::lock_guard lock(this->crsf_lock_);
+        return this->channel_state_;
     }
 
     bool XCrossfire::set_telemetry_vario(const double vertical_speed) const {
@@ -99,5 +103,20 @@ namespace crossfire {
 
         const std::vector payload(reinterpret_cast<uint8_t*>(&gps), reinterpret_cast<uint8_t*>(&gps) + sizeof(CRSFGlobalPosition));
         return this->handler_.send_crsf(CRSF_FRAMETYPE_GPS, payload);
+    }
+
+    void XCrossfire::parse_message(const uint8_t* crsf_cata) {
+        std::lock_guard lock(this->crsf_lock_);
+        if (crsf_cata[0] == CRSF_SYNC_BYTE && crsf_cata[1] >= 24 && crsf_cata[2] == CRSF_FRAMETYPE_RC_CHANNELS_PACKED) {
+            for (int i = 0; i < 16; i++) { this->channel_state_[i] = get_channel_value(crsf_cata, i); }
+        }
+
+        if (crsf_cata[0] == CRSF_SYNC_BYTE && crsf_cata[1] >= 12 && crsf_cata[2] == CRSF_FRAMETYPE_LINK_STATISTICS) {
+            this->link_state_.uplink_rssi_antenna_1 = crsf_cata[3]; this->link_state_.uplink_rssi_antenna_2 = crsf_cata[4];
+            this->link_state_.uplink_link_quality = crsf_cata[5]; this->link_state_.uplink_snr = static_cast<int8_t>(crsf_cata[6]);
+            this->link_state_.active_antenna = crsf_cata[7]; this->link_state_.rf_Mode = crsf_cata[8];
+            this->link_state_.uplink_tx_power = crsf_cata[9]; this->link_state_.downlink_rssi_antenna = crsf_cata[10];
+            this->link_state_.downlink_link_quality = crsf_cata[11]; this->link_state_.downlink_snr = static_cast<int8_t>(crsf_cata[12]);
+        }
     }
 } // namespace crossfire
